@@ -38,6 +38,37 @@ The input for this project is separated into three categories as follows:
 We categorize 7-Eleven food products as follows: frozen food, appetizers, beverages, milk, bakery items, snacks, ice cream, and instant food. We are interested only in the 
 food products category. Other categories are not included.
 
+### Optimization Model
+```
+from amplpy import AMPL, tools
+ampl = tools.ampl_notebook(
+    modules=["cplex"],          # modules to install
+    license_uuid="default",     # license to use
+    g=globals())                # instantiate AMPL object and register magics
+
+ampl.eval(
+      r"""
+      reset;
+      option solver cplex;
+
+      set nutr;
+      set id;
+
+      param price {id} > 0;
+      param pdf >= 0;
+      param m_min {nutr} >= 0;
+      param m_max {i in nutr} >= m_min[i];
+
+      param amt {nutr,id} >= 0;
+
+      var Buy {j in id} integer >= 0;
+
+      minimize Total_Cost:  sum {j in id} price[j] * Buy[j];
+
+      subject to Diet {i in nutr}: m_min[i] <= sum {j in id} amt[i,j] * Buy[j] <= m_max[i];
+      subject to const1 : sum {j in id} price[j] * Buy[j] <= pdf;""")
+```
+
 ### Output
 After entering the necessary information as input, which includes age, gender, the number of days (1-7 days), and budget per meal, as shown below.
 
